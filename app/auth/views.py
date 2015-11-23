@@ -1,9 +1,15 @@
 from flask import render_template, redirect, url_for, flash, request
-from flask.ext.login import login_user, logout_user, login_required
+from flask.ext.login import login_user, logout_user, login_required, current_user
 from . import auth
 from .forms import LoginForm, RegistrationForm
 from ..models import User
 from .. import db
+
+@auth.before_app_request
+def before_request():
+    if current_user.is_authenticated:
+        # Update the last visit time in the user profile
+        current_user.ping()
 
 # Reference: http://flask.pocoo.org/snippets/64/
 @auth.route("/login", methods=["GET", "POST"])
