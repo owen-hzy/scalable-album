@@ -1,4 +1,6 @@
 {% extends "base.html" %}
+{% import "bootstrap/wtf.html" as wtf %}
+{% import "_macros.html" as macros %}
 
 {% block title %}Home{% endblock %}
 
@@ -8,8 +10,19 @@
         {% if current_user.is_authenticated %}
             {{ current_user.username }}
         {% else %}
-            Stranger
+            Stranger, Please <a href="{{ url_for('auth.login') }}">Log In</a>
         {% endif %}!
     </h1>
 </div>
+{% if current_user.is_authenticated %}
+    <div>
+        {{ wtf.quick_form(form) }}
+    </div>
+    {% include "_notes.html" %}
+    {% if pagination %}
+        <div class="pagination">
+            {{ macros.pagination_widget(pagination, "main.index") }}
+        </div>
+    {% endif %}
+{% endif %}
 {% endblock %}
