@@ -17,7 +17,7 @@ class User(UserMixin, db.Model):
     member_since = db.Column(db.DateTime(), default=datetime.utcnow)
     last_seen = db.Column(db.DateTime(), default=datetime.utcnow)
     avatar_hash = db.Column(db.String(32))
-    notes = db.relationship("Note", backref="user", lazy="dynamic")
+    images = db.relationship("Image", backref="user", lazy="dynamic")
 
     @staticmethod
     def generate_fake(count=100):
@@ -81,9 +81,9 @@ class User(UserMixin, db.Model):
 def load_user(user_id):
     return User.query.get(int(user_id))
 
-class Note(db.Model):
+class Image(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    body = db.Column(db.Text, nullable=True)
+    image_name = db.Column(db.Text, nullable=True)
     timestamp = db.Column(db.DateTime, index=True, default=datetime.utcnow)
     user_id = db.Column(db.Integer, db.ForeignKey("user.id"))
 
@@ -96,7 +96,7 @@ class Note(db.Model):
         user_count = User.query.count()
         for i in xrange(count):
             u = User.query.offset(randint(0, user_count - 1)).first()
-            p = Note(body=forgery_py.lorem_ipsum.sentences(randint(1, 5)),
+            p = Image(image_name="test.jpg",
                      timestamp=forgery_py.date.date(True),
                      user=u)
             db.session.add(p)

@@ -32,9 +32,9 @@
         </p>
     </div>
 </div>
-<h3>Notes by {{ user.username }}</h3>
-{% include "_notes.html" %}
-{% if pagination %}
+{% if pagination and pagination.pages %}
+    <h3>images by {{ user.username }}</h3>
+    {% include "_images.html" %}
     <div class="pagination">
         {{ macros.pagination_widget(pagination, "main.user", username=user.username) }}
     </div>

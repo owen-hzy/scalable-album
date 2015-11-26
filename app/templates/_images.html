@@ -1,0 +1,23 @@
+{% for image in images %}
+<div class="images col-md-4" >
+    <img class="img-thumbnail" src="{{ url_for('static', filename='images/' + image.image_name) }}" />
+    <div style="margin-top: 5px;">
+        <img class="img-rounded" src="{{ image.user.gravatar(size=30) }}">
+        <a href="{{ url_for('.user', username=image.user.username) }}">{{ image.user.username }}</a>
+        <span style="float: right; vertical-align: middle;">
+            {{ moment(image.timestamp).fromNow() }}
+        </span>
+    </div>
+    <div class="image-footer">
+        {% if current_user == image.user %}
+        <a href="{{ url_for('.delete', id=image.id) }}" class="btn btn-danger">
+            Delete
+        </a>
+        {% endif %}
+        <a href="#" class="btn btn-default">
+            Detail
+        </a>
+    </div>
+</div>
+{% endfor %}
+

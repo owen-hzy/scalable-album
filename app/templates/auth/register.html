@@ -8,6 +8,14 @@
     <h1>Register</h1>
 </div>
 <div class="col-md-4">
-    {{ wtf.quick_form(form) }}
+    <form method="POST" action="{{ url_for('auth.register') }}">
+        {{ form.csrf_token }}
+        {{ wtf.form_field(form.email) }}
+        {{ wtf.form_field(form.username) }}
+        {{ wtf.form_field(form.password) }}
+        {{ wtf.form_field(form.password2) }}
+        {{ wtf.form_field(form.submit) }}
+        <a class="btn btn-default" href="{{ url_for('auth.login') }}">Cancel</a>
+    </form>
 </div>
 {% endblock %}

@@ -1,9 +1,11 @@
+from celery import Celery
 from flask import Flask
 from flask.ext.bootstrap import Bootstrap
 from flask.ext.moment import Moment
 from flask.ext.sqlalchemy import SQLAlchemy
 from flask.ext.login import LoginManager
 from config import config
+import os
 
 bootstrap = Bootstrap()
 moment = Moment()
@@ -28,5 +30,10 @@ def create_app(config_name):
 
     from .auth import auth as auth_blueprint
     app.register_blueprint(auth_blueprint, url_prefix="/auth")
+
+    if not os.path.exists(app.config["UPLOAD_FOLDER"]):
+        os.mkdir(app.config["UPLOAD_FOLDER"])
+    if not os.path.exists(app.config["THUMBNAIL_FOLDER"]):
+        os.mkdir(app.config["THUMBNAIL_FOLDER"])
 
     return app

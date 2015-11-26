@@ -1,7 +1,6 @@
 from flask.ext.wtf import Form
-from wtforms import StringField, TextAreaField, BooleanField, SelectField, SubmitField
-from wtforms.validators import Length, DataRequired
-
+from wtforms import StringField, TextAreaField, SubmitField, FileField
+from wtforms.validators import Length, DataRequired, Regexp
 
 class EditProfileForm(Form):
     name = StringField("Real Name", validators=[Length(1, 64)])
@@ -9,6 +8,6 @@ class EditProfileForm(Form):
     about_me = TextAreaField("About me")
     submit = SubmitField("Submit")
 
-class NoteForm(Form):
-    body = TextAreaField("Write your note here:", validators=[DataRequired()])
+class UploadForm(Form):
+    image = FileField("Upload Image Here", validators=[DataRequired()])
     submit = SubmitField("Submit")
