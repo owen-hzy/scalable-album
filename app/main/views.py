@@ -8,6 +8,11 @@ from app.models import User, Image
 from flask import render_template, url_for, flash, redirect, request, current_app
 from flask.ext.login import login_required, current_user
 from . import main
+from ..tasks import process_image
+
+@main.route("/test")
+def test():
+    return current_app.name
 
 @main.route("/")
 def index():
@@ -53,12 +58,7 @@ def upload():
         filename = filename + str(random.random())
         filename = hashlib.md5(filename.encode("utf-8")).hexdigest() + "." + extension
         form.image.data.save(os.path.join(current_app.config["UPLOAD_FOLDER"], filename))
-        image = Image(image_name=filename, user=current_user._get_current_object())
-        try:
-            db.session.add(image)
-            db.session.commit()
-        except:
-            db.session.rollback()
+        process_image(filename)
         flash("Successfully uploaded")
         return redirect(url_for(".index"))
     return render_template("new_image.html", form=form)

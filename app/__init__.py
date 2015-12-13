@@ -1,4 +1,3 @@
-from celery import Celery
 from flask import Flask
 from flask.ext.bootstrap import Bootstrap
 from flask.ext.moment import Moment
@@ -15,8 +14,9 @@ login_manager = LoginManager()
 login_manager.session_protection = "strong"
 login_manager.login_view = "auth.login"
 
-def create_app(config_name):
+def create_app(config_name, app_name):
     app = Flask(__name__)
+    app.name = app_name
     app.config.from_object(config[config_name])
     config[config_name].init_app(app)
 
@@ -37,3 +37,4 @@ def create_app(config_name):
         os.mkdir(app.config["THUMBNAIL_FOLDER"])
 
     return app
+

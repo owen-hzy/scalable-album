@@ -1,6 +1,6 @@
 {% for image in images %}
 <div class="images col-md-4" >
-    <img class="img-thumbnail" src="{{ url_for('static', filename='images/' + image.image_name) }}" />
+    <img class="img-thumbnail" src="{{ url_for('static', filename='thumbnails/' + image.image_name) }}" height="400"/>
     <div style="margin-top: 5px;">
         <img class="img-rounded" src="{{ image.user.gravatar(size=30) }}">
         <a href="{{ url_for('.user', username=image.user.username) }}">{{ image.user.username }}</a>

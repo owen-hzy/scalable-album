@@ -3,3 +3,4 @@ db_migrations
 env
 *.pyc
 app/static/images
+logs
