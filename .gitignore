@@ -4,3 +4,4 @@ env
 *.pyc
 app/static/images
 logs
+app/static/thumbnails
