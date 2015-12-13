@@ -3,23 +3,34 @@ import os
 import random
 
 from app import db
-from app.main.forms import EditProfileForm, UploadForm
+from app.main.forms import EditProfileForm, UploadForm, SearchForm
 from app.models import User, Image
 from flask import render_template, url_for, flash, redirect, request, current_app
 from flask.ext.login import login_required, current_user
 from . import main
-from ..tasks import process_image
 
 @main.route("/test")
 def test():
     return current_app.name
 
-@main.route("/")
+@main.route("/", methods=["GET", "POST"])
 def index():
+    form = SearchForm()
+    if request.method == "POST" and form.validate_on_submit():
+        return redirect(url_for(".search", query=form.search.data))
     page = request.args.get("page", 1, type=int)
     pagination = Image.query.order_by(Image.timestamp.desc()).paginate(page, per_page=current_app.config["IMAGES_PER_PAGE"], error_out=False)
     images = pagination.items
-    return render_template("index.html", images=images, pagination=pagination)
+    return render_template("index.html", images=images, pagination=pagination, form=form)
+
+@main.route("/search")
+@login_required
+def search():
+    query = request.args.get("query")
+    page = request.args.get("page", 1, type=int)
+    pagination = Image.query.filter(Image.hashtags.like("%" + query + "%")).paginate(page, per_page=current_app.config["IMAGES_PER_PAGE"], error_out=False)
+    images = pagination.items
+    return render_template("search_results.html", images=images, pagination=pagination, query=query)
 
 @main.route("/user/<username>")
 @login_required
@@ -39,6 +50,7 @@ def delete(id):
             db.session.delete(image)
             db.session.commit()
             os.remove(os.path.join(current_app.config["UPLOAD_FOLDER"], image.image_name))
+            os.remove(os.path.join(current_app.config["THUMBNAIL_FOLDER"], image.image_name))
         except:
             db.session.rollback()
         flash("Successfully deleted the image")
@@ -53,15 +65,24 @@ def upload():
     if request.method == "POST" and form.validate_on_submit():
         if not form.image.data and not form.image.data.mimetype.startswith("image"):
             return "Invalid File"
+        hashtags = form.hashtags.data
         filename, extension = (form.image.data.filename.rsplit(".", 1)[0], form.image.data.filename.rsplit(".", 1)[1])
         # randomize the file name to avoid override the image with same name
         filename = filename + str(random.random())
         filename = hashlib.md5(filename.encode("utf-8")).hexdigest() + "." + extension
         form.image.data.save(os.path.join(current_app.config["UPLOAD_FOLDER"], filename))
-        process_image(filename)
+        from ..tasks import process_image
+        process_image.delay(filename, hashtags, current_user._get_current_object())
+
         flash("Successfully uploaded")
-        return redirect(url_for(".index"))
+        # return redirect(url_for("."))
+        return redirect(url_for(".details", image_name=filename))
     return render_template("new_image.html", form=form)
+
+@main.route("/details/<image_name>", methods=["GET"])
+@login_required
+def details(image_name):
+    return render_template("details.html", image=image_name)
 
 @main.route("/edit_profile", methods=["GET", "POST"])
 @login_required

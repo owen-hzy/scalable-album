@@ -10,4 +10,9 @@ class EditProfileForm(Form):
 
 class UploadForm(Form):
     image = FileField("Upload Image Here", validators=[DataRequired()])
+    hashtags = StringField("HashTag (separate by semicolon)", validators=[DataRequired(), Length(4, 64)])
     submit = SubmitField("Submit")
+
+class SearchForm(Form):
+    search = StringField("", validators=[DataRequired(), Length(4, 64)])
+    submit = SubmitField("Search")

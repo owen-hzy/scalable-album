@@ -6,7 +6,7 @@
     margin-left: 280px;
 }
 div.images {
-    margin: 20px 0px 10px 0px;
+    margin: 50px 0px 10px 0px;
     border-top: 1px solid #e0e0e0;
     border-bottom: 1px solid #e0e0e0;
     padding: 8px;
@@ -14,7 +14,11 @@ div.images {
 div.image-thumbnail {
     position: absolute;
 }
+div.image-hashtags {
+    text-align: left;
+}
 div.image-footer {
+    clear: both;
     text-align: right;
 }
 div.pagination {

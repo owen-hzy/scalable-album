@@ -75,7 +75,7 @@ class User(UserMixin, db.Model):
         )
 
     def __repr__(self):
-        return "<User %r>" % self.username
+        return "<User %r>" % (self.username)
 
 @login_manager.user_loader
 def load_user(user_id):
@@ -85,6 +85,7 @@ class Image(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     image_name = db.Column(db.Text, nullable=True)
     timestamp = db.Column(db.DateTime, index=True, default=datetime.utcnow)
+    hashtags = db.Column(db.String(64), nullable=True)
     user_id = db.Column(db.Integer, db.ForeignKey("user.id"))
 
     @staticmethod
@@ -98,9 +99,13 @@ class Image(db.Model):
             u = User.query.offset(randint(0, user_count - 1)).first()
             p = Image(image_name="test.jpg",
                      timestamp=forgery_py.date.date(True),
+                     hashtags=forgery_py.lorem_ipsum.word(),
                      user=u)
             db.session.add(p)
             try:
                 db.session.commit()
             except:
                 db.session.rollback()
+
+    def __repr__(self):
+        return "<Image %r>" % (self.hashtags)

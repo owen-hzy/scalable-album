@@ -3,7 +3,7 @@ from app import create_app, db
 from app.models import User, Image
 from flask.ext.script import Manager, Shell
 
-app = create_app("default")
+app = create_app("default", "app")
 manager = Manager(app)
 
 def make_shell_context():

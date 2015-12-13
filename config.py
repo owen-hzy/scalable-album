@@ -5,6 +5,7 @@ class Config:
     SECRET_KEY = "ierg4080-project"
     # required by Flask-SQLAlchemy
     SQLALCHEMY_DATABASE_URI = "mysql+pymysql://ierg4080:ierg4080@localhost/project"
+    SQLALCHEMY_TRACK_MODIFICATIONS=False
     IMAGES_PER_PAGE=9
     UPLOAD_FOLDER = os.path.join(os.path.dirname(os.path.abspath(__file__)), "app/static/images")
     THUMBNAIL_FOLDER = os.path.join(os.path.dirname(os.path.abspath(__file__)), "app/static/thumbnails")

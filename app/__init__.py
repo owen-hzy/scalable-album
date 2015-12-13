@@ -1,3 +1,4 @@
+from celery import Celery
 from flask import Flask
 from flask.ext.bootstrap import Bootstrap
 from flask.ext.moment import Moment
@@ -38,3 +39,18 @@ def create_app(config_name, app_name):
 
     return app
 
+def create_celery_app(app=None):
+    app = app or create_app("default", "app")
+    celery = Celery(app.name, broker=app.config["CELERY_BROKER_URL"])
+    celery.conf.update(app.config)
+    TaskBase = celery.Task
+
+    class ContextTask(TaskBase):
+        abstract = True
+
+        def __call__(self, *args, **kwargs):
+            with app.app_context():
+                return TaskBase.__call__(self, *args, **kwargs)
+
+    celery.Task = ContextTask
+    return celery

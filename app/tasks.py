@@ -1,26 +1,14 @@
-import os
 import PIL.Image
-from celery import Celery
+import os
+from app import create_celery_app
+from app.db_access import insert_image
 
+celery = create_celery_app()
 
-def make_celery():
-    celery = Celery(__name__, broker=app.config['CELERY_BROKER_URL'])
-    celery.conf.update(app.config)
-    TaskBase = celery.Task
-    class ContextTask(TaskBase):
-        abstract = True
-        def __call__(self, *args, **kwargs):
-            with app.app_context():
-                return TaskBase.__call__(self, *args, **kwargs)
-    celery.Task = ContextTask
-    celery.app = app
-    return celery
-
-celery = make_celery()
-
-@celery.task
-def process_image(image_name):
-    image = PIL.Image.open(os.path.join(celery.app.config["UPLOAD_FOLDER"], image_name))
-    image.thumbnail(celery.app.config["THUMBNAIL_SIZE"])
-    image.save(os.path.join(celery.app.config["THUMBNAIL_FOLDER"], image_name))
+@celery.task(name="app.process_image")
+def process_image(image_name, hashtags, user):
+    insert_image(image_name, hashtags, user)
+    image = PIL.Image.open(os.path.join(celery.conf["UPLOAD_FOLDER"], image_name))
+    image.thumbnail(celery.conf["THUMBNAIL_SIZE"])
+    image.save(os.path.join(celery.conf["THUMBNAIL_FOLDER"], image_name))
 
