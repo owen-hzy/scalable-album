@@ -28,7 +28,7 @@ def index():
 def search():
     query = request.args.get("query")
     page = request.args.get("page", 1, type=int)
-    pagination = Image.query.filter(Image.hashtags.like("%" + query + "%")).paginate(page, per_page=current_app.config["IMAGES_PER_PAGE"], error_out=False)
+    pagination = Image.query.filter(Image.hashtags.like("%" + query + "%")).order_by(Image.timestamp.desc()).paginate(page, per_page=current_app.config["IMAGES_PER_PAGE"], error_out=False)
     images = pagination.items
     return render_template("search_results.html", images=images, pagination=pagination, query=query)
 
@@ -103,3 +103,56 @@ def edit_profile():
     form.location.data = current_user.location
     form.about_me.data = current_user.about_me
     return render_template("edit_profile.html", form=form)
+
+@main.route("/follow/<username>")
+@login_required
+def follow(username):
+    user = User.query.filter_by(username=username).first()
+    if user is None:
+        flash("Invalid User")
+        return redirect(url_for(".index"))
+    if current_user.is_following(user):
+        flash("You are already following this user")
+        return redirect(url_for(".user", username=username))
+    current_user.follow(user)
+    flash("You are now following %s" % username)
+    return redirect(url_for(".user", username=username))
+
+@main.route("/unfollow/<username>")
+@login_required
+def unfollow(username):
+    user = User.query.filter_by(username=username).first()
+    if user is None:
+        flash("Invalid User")
+        return redirect(url_for(".index"))
+    if not current_user.is_following(user):
+        flash("You are not following this user")
+        return redirect(url_for(".user", username=username))
+    current_user.unfollow(user)
+    flash("You are not following %s anymore" % username)
+    return redirect(url_for(".user", username=username))
+
+@main.route("/followers/<username>")
+@login_required
+def followers(username):
+    user = User.query.filter_by(username=username).first()
+    if user is None:
+        flash("Invalid User")
+        return redirect(url_for(".index"))
+    page = request.args.get("page", 1, type=int)
+    pagination = user.followers.paginate(page, per_page=current_app.config["FOLLOWERS_PER_PAGE"], error_out=False)
+    follows = [{"user": item.follower, "timestamp": item.timestamp} for item in pagination.items]
+    return render_template("followers.html", user=user, title="Followers of",
+                           endpoint=".followers", pagination=pagination, follows=follows)
+
+@main.route("/followed-by/<username>")
+@login_required
+def followed_by(username):
+    user = User.query.filter_by(username=username).first()
+    if user is None:
+        return redirect(url_for(".index"))
+    page = request.args.get("page", 1, type=int)
+    pagination = user.followed.paginate(page, per_page=current_app.config["FOLLOWERS_PER_PAGE"], error_out=False)
+    follows = [{"user": item.followed, "timestamp": item.timestamp} for item in pagination.items]
+    return render_template("followers.html", user=user, title="Followed by",
+                           endpoint=".followed_by", pagination=pagination, follows=follows)

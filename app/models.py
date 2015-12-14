@@ -6,6 +6,12 @@ from flask.ext.login import UserMixin
 from werkzeug.security import generate_password_hash, check_password_hash
 import hashlib
 
+class Follow(db.Model):
+    __tablename__ = "follows"
+    follower_id = db.Column(db.Integer, db.ForeignKey("user.id"), primary_key=True)
+    followed_id = db.Column(db.Integer, db.ForeignKey("user.id"), primary_key=True)
+    timestamp = db.Column(db.DateTime, default=datetime.utcnow)
+
 class User(UserMixin, db.Model):
     id = db.Column(db.INTEGER, primary_key=True)
     email = db.Column(db.String(64), index=True, unique=True)
@@ -18,6 +24,18 @@ class User(UserMixin, db.Model):
     last_seen = db.Column(db.DateTime(), default=datetime.utcnow)
     avatar_hash = db.Column(db.String(32))
     images = db.relationship("Image", backref="user", lazy="dynamic")
+
+    followed = db.relationship("Follow",
+                            foreign_keys=[Follow.follower_id],
+                            backref=db.backref("follower", lazy="joined"),
+                            lazy="dynamic",
+                            cascade="all, delete-orphan")
+    followers = db.relationship("Follow",
+                            foreign_keys=[Follow.followed_id],
+                            backref=db.backref("followed", lazy="joined"),
+                            lazy="dynamic",
+                            cascade="all, delete-orphan")
+
 
     @staticmethod
     def generate_fake(count=100):
@@ -73,6 +91,30 @@ class User(UserMixin, db.Model):
         return "{url}/{hash}?s={size}&d={default}&r={rating}".format(
             url=url, hash=hash, size=size, default=default, rating=rating
         )
+
+    def is_following(self, user):
+        return self.followed.filter_by(followed_id=user.id).first() is not None
+
+    def is_followed_by(self, user):
+        return self.followers.filter_by(follower_id=user.id).first() is not None
+
+    def follow(self, user):
+        if not self.is_following(user):
+            f = Follow(follower=self, followed=user)
+            try:
+                db.session.add(f)
+                db.session.commit()
+            except:
+                db.session.rollback()
+
+    def unfollow(self, user):
+        f = self.followed.filter_by(followed_id=user.id).first()
+        if f:
+            try:
+                db.session.delete(f)
+                db.session.commit()
+            except:
+                db.session.rollback()
 
     def __repr__(self):
         return "<User %r>" % (self.username)

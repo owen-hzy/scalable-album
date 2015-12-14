@@ -7,6 +7,7 @@ class Config:
     SQLALCHEMY_DATABASE_URI = "mysql+pymysql://ierg4080:ierg4080@localhost/project"
     SQLALCHEMY_TRACK_MODIFICATIONS=False
     IMAGES_PER_PAGE=9
+    FOLLOWERS_PER_PAGE=20
     UPLOAD_FOLDER = os.path.join(os.path.dirname(os.path.abspath(__file__)), "app/static/images")
     THUMBNAIL_FOLDER = os.path.join(os.path.dirname(os.path.abspath(__file__)), "app/static/thumbnails")
     CELERY_BROKER_URL = "amqp://localhost"
