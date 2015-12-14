@@ -1,8 +1,8 @@
 import hashlib
 import os
-import random
+import random, pickle
 
-from app import db
+from app import db, cache
 from app.main.forms import EditProfileForm, UploadForm, SearchForm
 from app.models import User, Image
 from flask import render_template, url_for, flash, redirect, request, current_app, make_response
@@ -89,7 +89,10 @@ def upload():
 @main.route("/details/<image_name>", methods=["GET"])
 @login_required
 def details(image_name):
-    return render_template("details.html", image=image_name)
+    similarity = {}
+    if image_name in cache.keys():
+        similarity = pickle.loads(cache.get(image_name))
+    return render_template("details.html", image=image_name, similar=similarity)
 
 @main.route("/edit_profile", methods=["GET", "POST"])
 @login_required

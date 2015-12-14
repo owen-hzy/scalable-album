@@ -5,4 +5,14 @@
 
 {% block page_content %}
     <img class="img-responsive" src="{{ url_for('static', filename='images/' + image) }}" />
+        {% if similar %}
+            <h3>Similar Images</h3>
+            {% for name, value in similar.iteritems() %}
+            <a href="{{ url_for('.details', image_name=name) }}">
+                <img class="img-thumbnail" src="{{ url_for('static', filename='thumbnails/' + name) }}" />
+            </a>
+            Similarity: <span class="badge">{{ value }}</span>
+            {% endfor %}
+        {% endif %}
+    </div>
 {% endblock %}

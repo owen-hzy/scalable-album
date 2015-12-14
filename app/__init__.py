@@ -1,3 +1,4 @@
+import redis
 from celery import Celery
 from flask import Flask
 from flask.ext.bootstrap import Bootstrap
@@ -10,6 +11,7 @@ import os
 bootstrap = Bootstrap()
 moment = Moment()
 db = SQLAlchemy()
+cache = redis.StrictRedis(host="localhost")
 
 login_manager = LoginManager()
 login_manager.session_protection = "strong"

@@ -5,3 +5,4 @@ env
 app/static/images
 logs
 app/static/thumbnails
+tasks_test.py
