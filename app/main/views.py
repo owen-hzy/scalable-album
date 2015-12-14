@@ -2,7 +2,7 @@ import hashlib
 import os
 import random, pickle
 
-from app import db, cache
+from app import db, redis_cache, cache
 from app.main.forms import EditProfileForm, UploadForm, SearchForm
 from app.models import User, Image
 from flask import render_template, url_for, flash, redirect, request, current_app, make_response
@@ -30,10 +30,10 @@ def index():
     images = pagination.items
     return render_template("index.html", images=images, pagination=pagination, form=form, show_followed=show_followed)
 
-@main.route("/search")
+@main.route("/search/<query>")
 @login_required
-def search():
-    query = request.args.get("query")
+@cache.cached(timeout=30)
+def search(query):
     page = request.args.get("page", 1, type=int)
     pagination = Image.query.filter(Image.hashtags.like("%" + query + "%")).order_by(Image.timestamp.desc()).paginate(page, per_page=current_app.config["IMAGES_PER_PAGE"], error_out=False)
     images = pagination.items
@@ -90,8 +90,8 @@ def upload():
 @login_required
 def details(image_name):
     similarity = {}
-    if image_name in cache.keys():
-        similarity = pickle.loads(cache.get(image_name))
+    if image_name in redis_cache.keys():
+        similarity = pickle.loads(redis_cache.get(image_name))
     return render_template("details.html", image=image_name, similar=similarity)
 
 @main.route("/edit_profile", methods=["GET", "POST"])

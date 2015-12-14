@@ -1,6 +1,6 @@
 import PIL.Image
 import os, pickle
-from app import create_celery_app, cache
+from app import create_celery_app, redis_cache
 from app.db_access import insert_image
 from skimage.measure import structural_similarity as ssim
 from skimage import io, color
@@ -19,7 +19,7 @@ def process_image(image_name, hashtags, user):
     image.save(os.path.join(celery.conf["THUMBNAIL_FOLDER"], image_name))
 
     similarity = cal_similarity(image_name, image_files, celery.conf["THUMBNAIL_FOLDER"])
-    cache.set(image_name, pickle.dumps(similarity, pickle.HIGHEST_PROTOCOL))
+    redis_cache.set(image_name, pickle.dumps(similarity, pickle.HIGHEST_PROTOCOL))
 
 def rgb2gray(rgb):
     return np.dot(rgb[...,:3], [0.299, 0.587, 0.144])
@@ -42,14 +42,14 @@ def cal_similarity(image_name, image_files, directory):
             similarity[image] = sim
 
             # update the cache
-            if image in cache.keys():
-                image_similarity = pickle.loads(cache.get(image))
+            if image in redis_cache.keys():
+                image_similarity = pickle.loads(redis_cache.get(image))
                 if len(image_similarity) < 2:
                     image_similarity[image_name] = sim
-                    cache.set(image, pickle.dumps(image_similarity, pickle.HIGHEST_PROTOCOL))
+                    redis_cache.set(image, pickle.dumps(image_similarity, pickle.HIGHEST_PROTOCOL))
                 min_ssim = min(image_similarity, key=image_similarity.get)
                 if sim > image_similarity[min_ssim]:
                     del image_similarity[min_ssim]
                     image_similarity[image_name] = sim
-                    cache.set(image, pickle.dumps(image_similarity, pickle.HIGHEST_PROTOCOL))
+                    redis_cache.set(image, pickle.dumps(image_similarity, pickle.HIGHEST_PROTOCOL))
     return similarity

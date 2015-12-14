@@ -5,13 +5,15 @@ from flask.ext.bootstrap import Bootstrap
 from flask.ext.moment import Moment
 from flask.ext.sqlalchemy import SQLAlchemy
 from flask.ext.login import LoginManager
+from flask.ext.cache import Cache
 from config import config
 import os
 
 bootstrap = Bootstrap()
 moment = Moment()
 db = SQLAlchemy()
-cache = redis.StrictRedis(host="localhost")
+redis_cache = redis.StrictRedis(host="localhost")
+cache = Cache(config={"CACHE_TYPE": "redis"})
 
 login_manager = LoginManager()
 login_manager.session_protection = "strong"
@@ -27,6 +29,7 @@ def create_app(config_name, app_name):
     moment.init_app(app)
     db.init_app(app)
     login_manager.init_app(app)
+    cache.init_app(app)
 
     from .main import main as main_blueprint
     app.register_blueprint(main_blueprint)
