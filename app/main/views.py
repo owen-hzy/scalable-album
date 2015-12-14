@@ -5,7 +5,7 @@ import random
 from app import db
 from app.main.forms import EditProfileForm, UploadForm, SearchForm
 from app.models import User, Image
-from flask import render_template, url_for, flash, redirect, request, current_app
+from flask import render_template, url_for, flash, redirect, request, current_app, make_response
 from flask.ext.login import login_required, current_user
 from . import main
 
@@ -19,9 +19,16 @@ def index():
     if request.method == "POST" and form.validate_on_submit():
         return redirect(url_for(".search", query=form.search.data))
     page = request.args.get("page", 1, type=int)
-    pagination = Image.query.order_by(Image.timestamp.desc()).paginate(page, per_page=current_app.config["IMAGES_PER_PAGE"], error_out=False)
+    show_followed = False
+    if current_user.is_authenticated:
+        show_followed = bool(request.cookies.get("show_followed", ""))
+    if show_followed:
+        query = current_user.followed_images
+    else:
+        query = Image.query
+    pagination = query.order_by(Image.timestamp.desc()).paginate(page, per_page=current_app.config["IMAGES_PER_PAGE"], error_out=False)
     images = pagination.items
-    return render_template("index.html", images=images, pagination=pagination, form=form)
+    return render_template("index.html", images=images, pagination=pagination, form=form, show_followed=show_followed)
 
 @main.route("/search")
 @login_required
@@ -156,3 +163,17 @@ def followed_by(username):
     follows = [{"user": item.followed, "timestamp": item.timestamp} for item in pagination.items]
     return render_template("followers.html", user=user, title="Followed by",
                            endpoint=".followed_by", pagination=pagination, follows=follows)
+
+@main.route("/all")
+@login_required
+def show_all():
+    res = make_response(redirect(url_for(".index")))
+    res.set_cookie("show_followed", "", max_age=10*24*60*60)
+    return res
+
+@main.route("/followed")
+@login_required
+def show_followed():
+    res = make_response(redirect(url_for(".index")))
+    res.set_cookie("show_followed", "1", max_age=10*24*60*60)
+    return res
