@@ -1,6 +1,6 @@
 import hashlib
 import os
-import random, pickle
+import random, pickle, collections
 
 from app import db, redis_cache, cache
 from app.main.forms import EditProfileForm, UploadForm, SearchForm
@@ -92,6 +92,7 @@ def details(image_name):
     similarity = {}
     if image_name in redis_cache.keys():
         similarity = pickle.loads(redis_cache.get(image_name))
+        similarity = collections.OrderedDict(sorted(similarity.items(), key=lambda x: x[1], reverse=True))
     return render_template("details.html", image=image_name, similar=similarity)
 
 @main.route("/edit_profile", methods=["GET", "POST"])

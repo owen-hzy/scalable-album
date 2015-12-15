@@ -1,7 +1,7 @@
 import os
 
 class Config:
-    WTF_CSRF_ENABLED = True
+    WTF_CSRF_ENABLED = False
     SECRET_KEY = "ierg4080-project"
     # required by Flask-SQLAlchemy
     SQLALCHEMY_DATABASE_URI = "mysql+pymysql://ierg4080:ierg4080@localhost/project"
