@@ -1,3 +1,5 @@
+### Reference: Some of the code referenced from book <Flask Web Development> by Niguel Grinberg ###
+
 import redis
 from celery import Celery
 from flask import Flask
